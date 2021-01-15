@@ -1,0 +1,63 @@
+name: squid-container-release
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "*"
+env:
+  IMAGE_NAME: squid
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v2
+      - name: Get tag
+        id: tag
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
+      - name: Get timestamp
+        id: timestamp
+        run: echo ::set-output name=timestamp::$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+      - run: buildah login -u ${{ secrets.DOCKERHUB_USER }} -p ${{ secrets.DOCKERHUB_TOKEN }} docker.io
+      - name: Build image
+        id: build-with-buildah
+        uses: redhat-actions/buildah-build@v1
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          tag: ${{ steps.tag.outputs.tag }}
+          dockerfiles: |
+            ./Dockerfile
+          build-args: |
+            BUILD_DATE=${{ steps.timestamp.outputs.timestamp }}
+      - name: Push to Dockerhub
+        id: push-to-dockerhub
+        uses: redhat-actions/push-to-registry@v1
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          tag: ${{ steps.tag.outputs.tag }}
+          registry: ${{ secrets.DOCKERHUB_REPO }}
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Push to Github
+        id: push-to-github
+        uses: redhat-actions/push-to-registry@v1
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          tag: ${{ steps.tag.outputs.tag }}
+          registry: ${{ secrets.GHCR_REPO }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
+  publish-dockerhub-doc:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Push description to Dockerhub
+        id: push-doc-to-dockerhub
+        uses: peter-evans/dockerhub-description@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          repository: ${{ secrets.DOCKERHUB_USER }}/${{ env.IMAGE_NAME }}
+
