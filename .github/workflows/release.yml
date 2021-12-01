@@ -13,46 +13,53 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - uses: actions/checkout@v2
-      - name: Get tag
-        id: tag
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
-      - name: Get timestamp
-        id: timestamp
-        run: echo ::set-output name=timestamp::$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+      - name: Compute variables
+        id: vars
+        run: |
+          echo ::set-output name=timestamp::$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo ::set-output name=sha_short::$(git rev-parse --short HEAD)
+          echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
+
       - run: buildah login -u ${{ secrets.DOCKERHUB_USER }} -p ${{ secrets.DOCKERHUB_TOKEN }} docker.io
+
       - name: Build image
-        id: build-with-buildah
-        uses: redhat-actions/buildah-build@v1
+        id: build-image
+        uses: redhat-actions/buildah-build@v2
         with:
           image: ${{ env.IMAGE_NAME }}
-          tag: ${{ steps.tag.outputs.tag }}
-          dockerfiles: |
+          tags: ${{ steps.vars.outputs.tag }}
+          containerfiles: |
             ./Dockerfile
           build-args: |
-            BUILD_DATE=${{ steps.timestamp.outputs.timestamp }}
-      - name: Push to Dockerhub
-        id: push-to-dockerhub
-        uses: redhat-actions/push-to-registry@v1
-        with:
-          image: ${{ env.IMAGE_NAME }}
-          tag: ${{ steps.tag.outputs.tag }}
-          registry: ${{ secrets.DOCKERHUB_REPO }}
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+            BUILD_DATE=${{ steps.vars.outputs.timestamp }}
+
       - name: Push to Github
         id: push-to-github
-        uses: redhat-actions/push-to-registry@v1
+        uses: redhat-actions/push-to-registry@v2
         with:
-          image: ${{ env.IMAGE_NAME }}
-          tag: ${{ steps.tag.outputs.tag }}
+          image: ${{ steps.build-image.outputs.image }}
+          tags: ${{ steps.build-image.outputs.tags }}
           registry: ${{ secrets.GHCR_REPO }}
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT }}
+
+      - name: Push to Dockerhub
+        id: push-to-dockerhub
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ steps.build-image.outputs.image }}
+          tags: ${{ steps.build-image.outputs.tags }}
+          registry: ${{ secrets.DOCKERHUB_REPO }}
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
   publish-dockerhub-doc:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v2
+
       - name: Push description to Dockerhub
         id: push-doc-to-dockerhub
         uses: peter-evans/dockerhub-description@v2

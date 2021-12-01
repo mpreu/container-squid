@@ -1,4 +1,4 @@
-FROM alpine:3.12
+FROM alpine:3.15
 
 ARG BUILD_DATE
 
@@ -11,13 +11,11 @@ LABEL org.opencontainers.image.created="$BUILD_DATE" \
       org.opencontainers.image.title="Squid Container Image" \
       org.opencontainers.image.description="Container image for the Squid caching proxy"
 
-ENV SQUID_VERSION=4.13-r0 \
+ENV SQUID_VERSION=5.2-r0 \
     SQUID_CACHE_DIR=/var/spool/squid \
     SQUID_LOG_DIR=/var/log/squid \
     SQUID_USER=squid
 
-# There seems to be an issue with https_proxy in 3.13.
-# See https://gitlab.alpinelinux.org/alpine/aports/-/issues/11768
 RUN sed -i -e 's/https/http/' /etc/apk/repositories && apk add --no-cache squid=${SQUID_VERSION}
 
 COPY entrypoint.sh /sbin/entrypoint.sh
