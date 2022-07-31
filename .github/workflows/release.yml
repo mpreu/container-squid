@@ -30,7 +30,7 @@ jobs:
           image: ${{ env.IMAGE_NAME }}
           tags: ${{ steps.vars.outputs.tag }}
           containerfiles: |
-            ./Dockerfile
+            ./Containerfile
           build-args: |
             BUILD_DATE=${{ steps.vars.outputs.timestamp }}
 
