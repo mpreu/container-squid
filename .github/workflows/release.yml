@@ -17,9 +17,9 @@ jobs:
       - name: Compute variables
         id: vars
         run: |
-          echo ::set-output name=timestamp::$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          echo ::set-output name=sha_short::$(git rev-parse --short HEAD)
-          echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
+          echo "timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_OUTPUT
+          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - run: buildah login -u ${{ secrets.DOCKERHUB_USER }} -p ${{ secrets.DOCKERHUB_TOKEN }} docker.io
 
