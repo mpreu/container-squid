@@ -6,13 +6,13 @@ Container image for the [Squid caching proxy](http://www.squid-cache.org/) based
 The container image is published on [Dockerhub](https://hub.docker.com/repository/docker/mpreu/squid) and can be accessed with e.g.:
 
 ```bash
-podman pull docker.io/mpreu/squid:5.5
+podman pull docker.io/mpreu/squid:5.9
 ```
 
 Alternatively, the image is also available in the [Github Container Registry](https://docs.github.com/en/packages/guides/about-github-container-registry):
 
 ```bash
-podman pull ghcr.io/mpreu/squid:5.5
+podman pull ghcr.io/mpreu/squid:5.9
 ```
 
 ## Configuration
@@ -22,14 +22,14 @@ To provide a `squid.conf` configuration file the mount point `/etc/squid/squid.c
 podman run \
   --name squid \
   --volume /path/to/squid.conf:/etc/squid/squid.conf \
-  docker.io/mpreu/squid:5.5
+  docker.io/mpreu/squid:5.9
 ```
 
 ### Command-line Parameters
 For further customization additional command-line parameters are forwarded to Squid. For example, getting the current installed Squid version in the container can be displayed with:
 
 ```bash
-podman run docker.io/mpreu/squid:5.5 --version
+podman run docker.io/mpreu/squid:5.9 --version
 ```
 
 ## Persistent Cache and Logs
@@ -43,7 +43,7 @@ podman run \
   --name squid \
   --volume /tmp/squid/cache:/var/spool/squid \
   --volume /tmp/squid/log:/var/log/squid \
-  docker.io/mpreu/squid:5.5
+  docker.io/mpreu/squid:5.9
 ```
 
 In case persistent logs are not required, they can just be accessed with e.g.:
@@ -69,7 +69,7 @@ ExecStart=/usr/bin/podman run --rm \
                               --security-opt label=disable \
                               -p 3128:3128 \
                               -v /path/to/squid.conf:/etc/squid/squid.conf \
-                              docker.io/mpreu/squid:5.5
+                              docker.io/mpreu/squid:5.9
 
 [Install]
 WantedBy=default.target
