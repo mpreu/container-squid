@@ -1,4 +1,4 @@
-FROM alpine:3.19
+FROM alpine:3.23.4
 
 ARG BUILD_DATE
 
@@ -11,7 +11,7 @@ LABEL org.opencontainers.image.created="$BUILD_DATE" \
       org.opencontainers.image.title="Squid Container Image" \
       org.opencontainers.image.description="Container image for the Squid caching proxy"
 
-ENV SQUID_VERSION=6.6-r0 \
+ENV SQUID_VERSION=7.5-r0 \
     SQUID_CACHE_DIR=/var/spool/squid \
     SQUID_LOG_DIR=/var/log/squid \
     SQUID_USER=squid
