@@ -2,17 +2,18 @@ FROM alpine:3.23.4
 
 ARG BUILD_DATE
 
+ARG SQUID_VERSION=7.5-r0
+
 LABEL org.opencontainers.image.created="$BUILD_DATE" \
       org.opencontainers.image.authors="Matthias Preu" \
       org.opencontainers.image.url="https://github.com/mpreu/container-squid" \
       org.opencontainers.image.documentation="https://github.com/mpreu/container-squid" \
       org.opencontainers.image.source="https://github.com/mpreu/container-squid" \
-      org.opencontainers.image.version="6.6" \
+      org.opencontainers.image.version="${SQUID_VERSION%-*}" \
       org.opencontainers.image.title="Squid Container Image" \
       org.opencontainers.image.description="Container image for the Squid caching proxy"
 
-ENV SQUID_VERSION=7.5-r0 \
-    SQUID_CACHE_DIR=/var/spool/squid \
+ENV SQUID_CACHE_DIR=/var/spool/squid \
     SQUID_LOG_DIR=/var/log/squid \
     SQUID_USER=squid
 
